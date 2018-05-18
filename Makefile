@@ -298,8 +298,16 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89
-HOSTCXXFLAGS = -O2
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3-fomit-frame-pointer -std=gnu89
+HOSTCXXFLAGS = -O3
+GRAPHITE = -fgraphite -fgraphite-identity -floop-interchange -ftree-loop-distribution -floop-strip-mine -floop-block -ftree-loop-linear -floop-nest-optimize -floop-parallelize-all
+
+KERNELFLAGS	:= -mcpu=kryo -mtune=kryo -marm \
+		   -fsingle-precision-constant -mvectorize-with-neon-quad \
+   		   -munaligned-access -fsched-spec-load -ftree-vectorize \
+   		   -fvect-cost-model=dynamic -fpredictive-commoning \
+   		   -finline-functions -findirect-inlining \
+   		   $(GRAPHITE)
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -365,7 +373,16 @@ CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage -fno-tree-loop-im
 CFLAGS_KCOV	= -fsanitize-coverage=trace-pc
+GEN_FLAGS := -O3 -fopenmp -funroll-loops \
+				-mcpu=kryo
 
+POLLY_FLAGS := -mllvm -polly \
+				-mllvm -polly-run-dce \
+				-mllvm -polly-run-inliner \
+				-mllvm -polly-opt-fusion=max \
+				-mllvm -polly-parallel -lgomp \
+				-mllvm -polly-ast-use-context \
+				-mllvm -polly-vectorizer=stripmine
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
 USERINCLUDE    := \
